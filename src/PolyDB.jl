@@ -39,9 +39,9 @@ julia> typeof(db)
 PolyDB.PolyDBDatabase
 ```
 """
-function polyDB(options::Dict=Dict())
+function polyDB(user::String="polymake", password::String = "database", options::Dict=Dict())
   client = Mongoc.Client(
-    "mongodb://polymake:database@db.polymake.org:27017/?tls=True&tlsAllowInvalidCertificates=True",
+    "mongodb://"*user*":"*password*"@db.polymake.org:27017/?tls=True&tlsAllowInvalidCertificates=True",
   )
   Mongoc.ping(client)
   return PolyDBDatabase(options, client["polydb"])
