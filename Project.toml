@@ -3,6 +3,13 @@ uuid = "eae4c8a8-b5fa-4f60-9996-b0618d8ef2d7"
 authors = ["Andreas Paffenholz"]
 version = "1.0.0-DEV"
 
+[deps]
+BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+JSONSchema = "7d188eb4-7ad8-530c-ae41-71a32a6d4692"
+Mongoc = "4fe8b98c-fc19-5c23-8ec2-168ff83495f2"
+
 [compat]
 julia = "1"
 
