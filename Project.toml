@@ -1,5 +1,6 @@
 name = "PolyDB"
 uuid = "eae4c8a8-b5fa-4f60-9996-b0618d8ef2d7"
+repo = "https://github.com/apffenholz/PolyDB.jl"
 authors = ["Andreas Paffenholz"]
 version = "1.0.0-DEV"
 
