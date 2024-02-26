@@ -4,6 +4,6 @@
 
 ## Description
 
-PolyDB.jl is a package to access the database [polyDB](https://polydb.org) independently of any computer algebra pacgage, e.g. for your own progrmas
+PolyDB.jl is a package to access the database [polyDB](https://polydb.org) independently of any computer algebra package, e.g. for your own programs
 
 The module is still experimental and misses several features
