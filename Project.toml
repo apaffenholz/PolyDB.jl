@@ -12,6 +12,7 @@ JSONSchema = "7d188eb4-7ad8-530c-ae41-71a32a6d4692"
 Mongoc = "4fe8b98c-fc19-5c23-8ec2-168ff83495f2"
 
 [compat]
+Mongoc = "0.9"
 Documenter = "1"
 BSON = "0.3"
 JSON = "0.21"
