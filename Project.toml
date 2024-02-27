@@ -13,6 +13,7 @@ Mongoc = "4fe8b98c-fc19-5c23-8ec2-168ff83495f2"
 
 [compat]
 JSON = "0.21"
+JSONSchema = "1"
 julia = "1"
 
 [extras]
