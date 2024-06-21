@@ -10,14 +10,17 @@ Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 JSONSchema = "7d188eb4-7ad8-530c-ae41-71a32a6d4692"
 Mongoc = "4fe8b98c-fc19-5c23-8ec2-168ff83495f2"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
 
 [compat]
-Mongoc = "0.9"
-Documenter = "1"
 BSON = "0.3"
+Documenter = "1"
 JSON = "0.21"
 JSONSchema = "1"
+Mongoc = "0.9"
 julia = "1"
+Suppressor = "0.2.7"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
