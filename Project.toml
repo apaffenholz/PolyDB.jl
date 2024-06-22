@@ -19,8 +19,9 @@ Documenter = "1"
 JSON = "0.21"
 JSONSchema = "1"
 Mongoc = "0.9"
-julia = "1"
+Revise = "3"
 Suppressor = "0.2.7"
+julia = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
