@@ -1,5 +1,5 @@
 """
-    find_one(collection::PolyDBCollection; query::Union{Dict,Nothing}=nothing, projection::Union{Dict,Nothing}=nothing, skip::Union{Int,Nothing}=nothing, further_options::Union{Nothing,Mongoc.BSON}=nothing)
+    find_one(collection::PolyDBCollection; query::Union{Dict,Nothing}=nothing, projection::Union{Dict,Nothing}=nothing, skip::Union{Int,Nothing}=nothing, further_options::Union{Nothing,Dict}=nothing)
 
 Retrive one element from the collection that matches the given query
 # Examples
@@ -56,7 +56,7 @@ function find_one(
   query::Union{Dict,Nothing}=nothing,
   projection::Union{Dict,Nothing}=nothing,
   skip::Union{Int,Nothing}=nothing,
-  further_options::Union{Nothing,Mongoc.BSON}=nothing,
+  further_options::Union{Nothing,Dict}=nothing,
 )
   if isnothing(query)
     query = Dict()
@@ -70,11 +70,11 @@ function find_one(
   if !isnothing(projection)
     further_options["projection"] = projection
   end
-  return Mongoc.find_one(collection.coll, Mongoc.BSON(query); options=further_options)
+  return Mongoc.find_one(collection.coll, Mongoc.BSON(query); options=isnothing(further_options) ? nothing : Mongoc.BSON(further_options))
 end
 
 """
-    find(collection::PolyDBCollection; query::Union{Dict,Nothing}=nothing, projection::Union{Dict,Nothing}=nothing, skip::Union{Int,Nothing}=nothing, limit::Union{Int,Nothing}=nothing, further_options::Union{Nothing,Mongoc.BSON}=nothing)
+    find(collection::PolyDBCollection; query::Union{Dict,Nothing}=nothing, projection::Union{Dict,Nothing}=nothing, skip::Union{Int,Nothing}=nothing, limit::Union{Int,Nothing}=nothing, further_options::Union{Nothing,Dict}=nothing)
 
 Obtain a cursor over all results in a collection matching the given query
 # Examples
@@ -94,9 +94,9 @@ function find(
   projection::Union{Dict,Nothing}=nothing,
   skip::Union{Int,Nothing}=nothing,
   limit::Union{Int,Nothing}=nothing,
-  further_options::Union{Nothing,Mongoc.BSON}=nothing,
+  further_options::Union{Nothing,Dict}=nothing,
 )::Mongoc.Cursor
-  if query == nothing
+  if isnothing(query)
     query = Dict()
   end
   if isnothing(further_options)
@@ -111,8 +111,91 @@ function find(
   if !isnothing(projection)
     further_options["projection"] = projection
   end
-  return Mongoc.find(collection.coll, Mongoc.BSON(query); options=further_options)
+  return Mongoc.find(collection.coll, Mongoc.BSON(query); options=isnothing(further_options) ? nothing : Mongoc.BSON(further_options))
 end
+
+
+"""
+    aggregate(collection::PolyDBCollection, pipeline::Vector{Dict}; further_options::Union{Nothing,Dict}=nothing)
+
+Obtain a cursor over all results in a collection matching the pipeline
+# Examples
+```julia-repl
+julia> db = PolyDB.polyDB();
+julia> coll = PolyDB.get_collection(db, "Polytopes.Lattice.01Polytopes");
+julia> pl = Array([
+           Dict( "\$match" => Dict( "DIM" => 4 ) ),
+           Dict( "\$group" => Dict( "_id" => "\$N_EDGES", "n_polytopes" => Dict( "\$sum" => 1 ) ) ),
+           Dict( "\$sort" => Dict("_id" => 1 ) ),
+               Dict( "\$project" => Dict( "_id" => 0, "n_edges" => "\$_id", "n_polytopes" => "\$n_polytopes") )
+       ]);
+julia> cursor = PolyDB.aggegate(coll, pl)
+julia> for e in cursor
+for e in cur
+         println(e)
+       end
+BSON("{ "n_edges" : 10, "n_polytopes" : 3 }")
+BSON("{ "n_edges" : 13, "n_polytopes" : 3 }")
+BSON("{ "n_edges" : 14, "n_polytopes" : 4 }")
+BSON("{ "n_edges" : 15, "n_polytopes" : 5 }")
+BSON("{ "n_edges" : 16, "n_polytopes" : 2 }")
+BSON("{ "n_edges" : 17, "n_polytopes" : 3 }")
+BSON("{ "n_edges" : 18, "n_polytopes" : 11 }")
+BSON("{ "n_edges" : 19, "n_polytopes" : 5 }")
+BSON("{ "n_edges" : 20, "n_polytopes" : 7 }")
+BSON("{ "n_edges" : 21, "n_polytopes" : 9 }")
+BSON("{ "n_edges" : 22, "n_polytopes" : 13 }")
+BSON("{ "n_edges" : 23, "n_polytopes" : 12 }")
+BSON("{ "n_edges" : 24, "n_polytopes" : 9 }")
+BSON("{ "n_edges" : 25, "n_polytopes" : 16 }")
+BSON("{ "n_edges" : 26, "n_polytopes" : 12 }")
+BSON("{ "n_edges" : 27, "n_polytopes" : 15 }")
+BSON("{ "n_edges" : 28, "n_polytopes" : 18 }")
+BSON("{ "n_edges" : 29, "n_polytopes" : 9 }")
+BSON("{ "n_edges" : 30, "n_polytopes" : 12 }")
+BSON("{ "n_edges" : 31, "n_polytopes" : 10 }")
+BSON("{ "n_edges" : 32, "n_polytopes" : 9 }")
+BSON("{ "n_edges" : 33, "n_polytopes" : 8 }")
+BSON("{ "n_edges" : 34, "n_polytopes" : 4 }")
+BSON("{ "n_edges" : 35, "n_polytopes" : 3 }")
+BSON("{ "n_edges" : 36, "n_polytopes" : 5 }")
+BSON("{ "n_edges" : 37, "n_polytopes" : 2 }")
+BSON("{ "n_edges" : 38, "n_polytopes" : 1 }")
+```
+"""
+function aggregate(collection::PolyDBCollection, pipeline::Vector{Dict{String}}; further_options::Union{Nothing,Dict}=nothing)::Mongoc.Cursor
+  return Mongoc.aggregate(collection.coll, Mongoc.BSON(pipeline); options=isnothing(further_options) ? nothing : Mongoc.BSON(further_options))
+end
+
+"""
+    filter(collection::PolyDBCollection, String; filter::Union{Nothing,Dict}=nothing)
+
+Obtain an array containing all differenct values of a property over all doxuments matching the filter
+# Examples
+```julia-repl
+julia> db = PolyDB.polyDB();
+julia> coll = PolyDB.get_collection(db, "Polytopes.Lattice.01Polytopes");
+julia> filter = Dict("DIM"=>4, "N_FACETS"=>6);
+julia> res = PolyDB.distinct(coll, "N_EDGES", filter = filter)
+4-element Vector{Any}:
+ 13
+ 15
+ 16
+ 18
+```
+"""
+function distinct(collection::PolyDBCollection, property::String; filter::Union{Dict,Nothing} = nothing)::Array
+  db = collection.db.db
+  query = Mongoc.BSON()
+  query["distinct"] = collection.name
+  query["key"] = property
+  if !isnothing(filter)
+    query["query"] = Mongoc.BSON(filter)
+  end
+
+  return Mongoc.command_simple(db, Mongoc.BSON(query))["values"]
+end
+
 
 # replaces all __ in the schema with $ in keys
 # operates by converting to string, using string replacement, and converting back to JSON

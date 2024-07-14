@@ -4,6 +4,8 @@ Main module for `PolyDB.jl` -- a package to access polyDB.
 
 module PolyDB
 
+import NetworkOptions
+
 using Mongoc
 using BSON
 using JSON
@@ -16,13 +18,13 @@ export PolyDBCollection
 export polyDB
 export collections, sections, section_names
 export get_collection
-export find, find_one, as_dict
+export find, find_one, aggregate, distinct, as_dict
 export collection_schema, type_of
 export PolyDBDatabase
 
 struct PolyDBDatabase
-  options::Dict
   db::Mongoc.Database
+  options::Dict
 end
 
 struct PolyDBCollection
@@ -59,13 +61,45 @@ julia> typeof(db)
 PolyDBDatabase
 ```
 """
-function polyDB(user::String="polymake", password::String = "database", options::Dict=Dict())
-  client = Mongoc.Client(
-    "mongodb://"*user*":"*password*"@db.polymake.org:27017/?tls=True&tlsAllowInvalidCertificates=True",
+function polyDB(;
+    user::String="polymake",
+    password::String = "database",
+    host::String = "db.polymake.org",
+    port::Int = 27017,
+    ssl::Bool = true,
+    tlsAllowInvalidHostnames::Bool = false,
+    tlsAllowInvalidCertificates::Bool = false
   )
-  Mongoc.ping(client)
-  db = Nothing
-  db = PolyDBDatabase(options, client["polydb"])
+
+  options = Dict(
+    user => user,
+    password => password,
+    host => host,
+    port => port,
+    ssl => ssl,
+    tlsAllowInvalidCertificates => tlsAllowInvalidCertificates,
+    tlsAllowInvalidHostnames  => tlsAllowInvalidHostnames
+  )
+
+  uri = "mongodb://" * user * ":" * password * "@" * host * ":" * string(port) * "/?authSource=admin"
+  if ssl
+     uri *= "&ssl=true&sslCertificateAuthorityFile="*NetworkOptions.ca_roots_path()
+  end
+  if tlsAllowInvalidCertificates
+     uri *= "&tlsAllowInvalidCertificates=true"
+  end
+  if tlsAllowInvalidHostnames
+     uri *= "&tlsAllowInvalidHostnames=true"
+  end
+
+  client = Mongoc.Client(uri)
+  try
+    Mongoc.ping(client)
+  catch e
+    println("Connection to database failed with error: " * string(e))
+  end
+
+  db = PolyDBDatabase(client["polydb"],options)
   return db
 end
 
