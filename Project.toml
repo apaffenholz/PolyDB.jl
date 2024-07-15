@@ -20,6 +20,7 @@ Documenter = "1"
 JSON = "0.21"
 JSONSchema = "1"
 Mongoc = "0.9"
+NetworkOptions = "1"
 Suppressor = "0.2.7"
 julia = "1"
 
