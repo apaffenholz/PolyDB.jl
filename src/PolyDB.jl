@@ -18,13 +18,14 @@ export PolyDBCollection
 export polyDB
 export collections, sections, section_names
 export get_collection
-export find, find_one, aggregate, distinct, as_dict
+export find, find_one, aggregate, distinct, as_dict, sample
 export collection_schema, type_of
 export PolyDBDatabase
 
 struct PolyDBDatabase
   db::Mongoc.Database
-  options::Dict
+  options::Union{Dict,Nothing}
+  uri::String
 end
 
 struct PolyDBCollection
@@ -71,25 +72,31 @@ function polyDB(;
     tlsAllowInvalidCertificates::Bool = false
   )
 
-  options = Dict(
-    user => user,
-    password => password,
-    host => host,
-    port => port,
-    ssl => ssl,
-    tlsAllowInvalidCertificates => tlsAllowInvalidCertificates,
-    tlsAllowInvalidHostnames  => tlsAllowInvalidHostnames
-  )
+  uri = get(ENV, "POLYDB_URI", nothing)
 
-  uri = "mongodb://" * user * ":" * password * "@" * host * ":" * string(port) * "/?authSource=admin"
-  if ssl
-     uri *= "&ssl=true&sslCertificateAuthorityFile="*NetworkOptions.ca_roots_path()
-  end
-  if tlsAllowInvalidCertificates
-     uri *= "&tlsAllowInvalidCertificates=true"
-  end
-  if tlsAllowInvalidHostnames
-     uri *= "&tlsAllowInvalidHostnames=true"
+  if isnothing(uri)
+    options = Dict(
+      user => user,
+      password => password,
+      host => host,
+      port => port,
+      ssl => ssl,
+      tlsAllowInvalidCertificates => tlsAllowInvalidCertificates,
+      tlsAllowInvalidHostnames  => tlsAllowInvalidHostnames
+    )
+
+    uri = "mongodb://" * user * ":" * password * "@" * host * ":" * string(port) * "/?authSource=admin"
+    if ssl
+       uri *= "&ssl=true&sslCertificateAuthorityFile="*NetworkOptions.ca_roots_path()
+    end
+    if tlsAllowInvalidCertificates
+       uri *= "&tlsAllowInvalidCertificates=true"
+    end
+    if tlsAllowInvalidHostnames
+       uri *= "&tlsAllowInvalidHostnames=true"
+    end
+  else
+    options = nothing
   end
 
   client = Mongoc.Client(uri)
@@ -99,7 +106,7 @@ function polyDB(;
     println("Connection to database failed with error: " * string(e))
   end
 
-  db = PolyDBDatabase(client["polydb"],options)
+  db = PolyDBDatabase(client["polydb"],options,uri)
   return db
 end
 

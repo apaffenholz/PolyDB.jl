@@ -197,6 +197,41 @@ function distinct(collection::PolyDBCollection, property::String; filter::Union{
 end
 
 
+"""
+    find_one(collection::PolyDBCollection; query::Union{Dict,Nothing}=nothing, projection::Union{Dict,Nothing}=nothing, skip::Union{Int,Nothing}=nothing, further_options::Union{Nothing,Dict}=nothing)
+
+Retrive one element from the collection that matches the given query
+# Examples
+```julia-repl
+julia> db = PolyDB.polyDB();
+julia> coll = PolyDB.get_collection(db, "Polytopes.Lattice.Reflexive");
+julia> PolyDB.sample(coll, filter = Dict("N_VERTICES" => 7));
+julia> typeof(p)
+Mongoc.BSON
+```
+"""
+function sample(collection::PolyDBCollection; filter::Union{Dict,Nothing} = nothing, further_options::Union{Dict,Nothing} = nothing)::Union{Mongoc.BSON, Nothing}
+
+  if !isnothing(filter)
+    pipeline = Array([
+      Dict( "\$match" => filter ),
+      Dict( "\$sample" => Dict( "size" => 1 ) )
+    ])
+  else
+    pipeline = Array([
+      Dict( "\$sample" => Dict( "size" => 1) )
+    ])
+  end
+
+  cur = Mongoc.aggregate(collection.coll, Mongoc.BSON(pipeline); options=isnothing(further_options) ? nothing : Mongoc.BSON(further_options))
+  try
+    next = iterate(cur)
+    return first(next)
+  catch e
+    return nothing
+  end
+end
+
 # replaces all __ in the schema with $ in keys
 # operates by converting to string, using string replacement, and converting back to JSON
 # FIXME: check if there is a faster method that directly modifies the keys
@@ -216,3 +251,4 @@ function as_dict(
     return Mongoc.as_dict(doc)
   end
 end
+
